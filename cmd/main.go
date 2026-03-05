@@ -28,6 +28,10 @@ func main() {
 	userService := service.NewUserService(userRepository, jwtManager)
 	userHandler := handler.NewUserHandler(userService, cfg)
 
+	productRepository := repository.NewProductReposity(db)
+	productService := service.NewProductService(productRepository)
+	productHandler := handler.NewProeductHandler(productService, cfg)
+
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -43,9 +47,10 @@ func main() {
 
 	protected := api.Group("", middleware.AuthMiddleware(jwtManager))
 
-	protected.Get("/hello", func(c *fiber.Ctx) error {
-		return c.SendString("Hello World")
-	})
+	product := protected.Group("/product")
+	product.Get("", productHandler.GetAllProducts)
+	product.Post("/create", productHandler.Create)
+	product.Get("/:id", productHandler.GetProductByID)
 
 	addr := fmt.Sprintf(":%s", cfg.AppPort)
 	log.Printf("Server running on %s", addr)

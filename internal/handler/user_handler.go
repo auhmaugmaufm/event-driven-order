@@ -19,7 +19,7 @@ func NewUserHandler(svc *service.UserService, cfg *config.Config) *UserHandler {
 }
 
 func (h *UserHandler) Register(c *fiber.Ctx) error {
-	var req dto.UserDTO
+	var req dto.UserRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{
 			Error:   "bad_request",
@@ -56,12 +56,11 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 			Message: "failed to create user",
 		})
 	}
-
 	return nil
 }
 
 func (h *UserHandler) Login(c *fiber.Ctx) error {
-	var req dto.UserDTO
+	var req dto.UserRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(dto.ErrorResponse{Error: "bad_request", Message: "invalid body"})
 	}

@@ -27,5 +27,5 @@ func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &user, err
+	return &user, nil
 }

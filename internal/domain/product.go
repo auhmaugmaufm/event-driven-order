@@ -13,3 +13,9 @@ type Product struct {
 	CreatedAt    time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt    time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
+
+type ProductRepository interface {
+	Create(product *Product) error
+	GetByID(id uuid.UUID) (*Product, error)
+	GetAll() ([]Product, error)
+}

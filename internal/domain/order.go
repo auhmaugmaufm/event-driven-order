@@ -14,5 +14,5 @@ type Order struct {
 	UpdatedAt   time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 
 	Items []OrderItem `json:"items,omitempty" gorm:"foreignKey:OrderID"`
-	User  User        `json:"user" gorm:"foreignKey:UserID"`
+	User  *User       `json:"user,omitempty" gorm:"foreignKey:UserID"`
 }

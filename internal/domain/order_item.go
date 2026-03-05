@@ -9,6 +9,6 @@ type OrderItem struct {
 	Quantity  int       `json:"quantity" gorm:"not null"`
 	Price     uint      `json:"price" gorm:"not null"`
 
-	Product Product `json:"product" gorm:"foreignKey:ProductID"`
-	Order   Order   `json:"order" gorm:"foreignKey:OrderID"`
+	Product *Product `json:"product,omitempty" gorm:"foreignKey:ProductID"`
+	Order   *Order   `json:"-" gorm:"foreignKey:OrderID"`
 }

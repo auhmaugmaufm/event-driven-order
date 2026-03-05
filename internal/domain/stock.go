@@ -13,5 +13,5 @@ type Stock struct {
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 
-	Product Product `json:"product" gorm:"foreignKey:ProductID"`
+	Product *Product `json:"product,omitempty" gorm:"foreignKey:ProductID"`
 }
