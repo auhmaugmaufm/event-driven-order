@@ -14,12 +14,17 @@ func NewProductReposity(db *gorm.DB) domain.ProductRepository {
 	return &productRepository{db: db}
 }
 
-func (r *productRepository) Create(product *domain.Product) error {
-	err := r.db.Create(product).Error
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *productRepository) CreateWithStock(product *domain.Product, stock *domain.Stock) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(product).Error; err != nil {
+			return err
+		}
+		stock.ProductID = product.ID
+		if err := tx.Create(stock).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (r *productRepository) GetByID(id uuid.UUID) (*domain.Product, error) {

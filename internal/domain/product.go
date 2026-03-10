@@ -15,7 +15,7 @@ type Product struct {
 }
 
 type ProductRepository interface {
-	Create(product *Product) error
+	CreateWithStock(product *Product, stock *Stock) error
 	GetByID(id uuid.UUID) (*Product, error)
 	GetAll() ([]Product, error)
 }

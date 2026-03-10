@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Stock struct {
@@ -14,4 +15,12 @@ type Stock struct {
 	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 
 	Product *Product `json:"product,omitempty" gorm:"foreignKey:ProductID"`
+}
+
+type StockRepository interface {
+	CreateWithTx(tx *gorm.DB, stock *Stock) error
+	IncreaseStock(productId uuid.UUID, quantity int) error
+	DecreaseStock(productId uuid.UUID, quantity int) error
+	GetProductStock(productId uuid.UUID) (*Stock, error)
+	GetStocks() ([]Stock, error)
 }

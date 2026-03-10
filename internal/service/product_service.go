@@ -17,7 +17,10 @@ func NewProductService(repo domain.ProductRepository) *ProductService {
 }
 
 func (s *ProductService) Create(product *domain.Product) error {
-	return s.repo.Create(product)
+	stock := &domain.Stock{
+		Quantity: 0,
+	}
+	return s.repo.CreateWithStock(product, stock)
 }
 
 func (s *ProductService) GetByID(id uuid.UUID) (*dto.ProductResponse, error) {
