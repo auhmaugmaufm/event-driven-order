@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,6 +16,6 @@ type User struct {
 }
 
 type UserRepository interface {
-	Create(user *User) error
-	GetByEmail(email string) (*User, error)
+	Create(ctx context.Context, user *User) error
+	GetByEmail(ctx context.Context, email string) (*User, error)
 }

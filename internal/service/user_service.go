@@ -1,10 +1,12 @@
 package service
 
 import (
+	"context"
 	"errors"
 
 	"github.com/auhmaugmaufm/event-driven-order/internal/auth"
 	"github.com/auhmaugmaufm/event-driven-order/internal/domain"
+	"github.com/auhmaugmaufm/event-driven-order/internal/dto"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,8 +18,16 @@ type UserService struct {
 func NewUserService(repo domain.UserRepository, jwtManager *auth.JWTManager) *UserService {
 	return &UserService{repo: repo, jwtManager: jwtManager}
 }
+func (s *UserService) Create(ctx context.Context, req *dto.UserRequest) error {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
 
-func (s *UserService) Create(user *domain.User) error {
+	user := &domain.User{
+		Email:        req.Email,
+		PasswordHash: string(bytes),
+	}
 	return s.repo.Create(user)
 }
 
