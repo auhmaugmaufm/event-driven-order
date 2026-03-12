@@ -28,15 +28,15 @@ func (s *UserService) Create(ctx context.Context, req *dto.UserRequest) error {
 		Email:        req.Email,
 		PasswordHash: string(bytes),
 	}
-	return s.repo.Create(user)
+	return s.repo.Create(ctx, user)
 }
 
-func (s *UserService) Login(email string, password string) (string, error) {
-	user, err := s.repo.GetByEmail(email)
+func (s *UserService) Login(ctx context.Context, req *dto.UserRequest) (string, error) {
+	user, err := s.repo.GetByEmail(ctx, req.Email)
 	if err != nil {
 		return "", errors.New("invalid email or password")
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
 		return "", errors.New("invalid email or password")
 	}
 	return s.jwtManager.GenerateToken(user.ID, user.Email)

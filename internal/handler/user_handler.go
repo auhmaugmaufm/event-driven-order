@@ -5,7 +5,6 @@ import (
 	"github.com/auhmaugmaufm/event-driven-order/internal/service"
 	"github.com/auhmaugmaufm/event-driven-order/pkg/config"
 	"github.com/go-playground/validator"
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -27,7 +26,8 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := validator.Validate(req); err != nil {
+	var validate = validator.New()
+	if err := validate.Struct(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{
 			Error:   "validation_error",
 			Message: err.Error(),
@@ -50,50 +50,9 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(dto.ErrorResponse{Error: "bad_request", Message: "invalid body"})
 	}
-	token, err := h.service.Login(req.Email, req.Password)
+	token, err := h.service.Login(c.Context(), &req)
 	if err != nil {
 		return c.Status(401).JSON(dto.ErrorResponse{Error: "unauthorized", Message: err.Error()})
 	}
 	return c.JSON(fiber.Map{"token": token})
 }
-
-// func (h *UserHandler) Register(c *fiber.Ctx) error {
-// 	var req dto.UserRequest
-// 	if err := c.BodyParser(&req); err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{
-// 			Error:   "bad_request",
-// 			Message: "invalid request body",
-// 		})
-// 	}
-
-// 	if req.Email == "" {
-// 		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{
-// 			Error:   "validation_error",
-// 			Message: "Email is required",
-// 		})
-// 	}
-
-// 	if req.Password == "" {
-// 		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{
-// 			Error:   "validation_error",
-// 			Message: "Password is required",
-// 		})
-// 	}
-
-// 	bytes, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	user := &domain.User{
-// 		Email:        req.Email,
-// 		PasswordHash: string(bytes),
-// 	}
-// 	if err := h.service.Create(user); err != nil {
-// 		return c.Status(fiber.StatusInternalServerError).JSON(dto.ErrorResponse{
-// 			Error:   "internal_error",
-// 			Message: "failed to create user",
-// 		})
-// 	}
-// 	return nil
-// }
