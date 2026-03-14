@@ -9,4 +9,8 @@ type TxRepository interface {
 		productRepo ProductRepository,
 		stockRepo StockRepository,
 	) error) error
+	ExecStockMovementTx(ctx context.Context, fn func(
+		stockMovement StockMovementRepository,
+		stockRepo StockRepository,
+	) error) error
 }

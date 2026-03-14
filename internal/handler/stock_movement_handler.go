@@ -4,24 +4,21 @@ import (
 	"github.com/auhmaugmaufm/event-driven-order/internal/dto"
 	"github.com/auhmaugmaufm/event-driven-order/internal/service"
 	"github.com/auhmaugmaufm/event-driven-order/pkg/config"
-	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
-type ProductHandler struct {
-	service *service.ProductService
+type StockMovementHandler struct {
+	service *service.StockMovementService
 	cfg     *config.Config
 }
 
-func NewProductHandler(svc *service.ProductService, cfg *config.Config) *ProductHandler {
-	return &ProductHandler{service: svc, cfg: cfg}
+func NewStockMovementHandler(svc *service.StockMovementService, cfg *config.Config) *StockMovementHandler {
+	return &StockMovementHandler{service: svc, cfg: cfg}
 }
 
-var validate = validator.New()
-
-func (h *ProductHandler) Create(c *fiber.Ctx) error {
-	var req dto.ProductRequest
+func (h *StockMovementHandler) Create(c *fiber.Ctx) error {
+	var req dto.StockMovementRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{
 			Error:   "bad_request",
@@ -35,7 +32,6 @@ func (h *ProductHandler) Create(c *fiber.Ctx) error {
 			Message: err.Error(),
 		})
 	}
-
 	if err := h.service.Create(c.Context(), &req); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.ErrorResponse{
 			Error:   "internal_error",
@@ -47,7 +43,7 @@ func (h *ProductHandler) Create(c *fiber.Ctx) error {
 	})
 }
 
-func (h *ProductHandler) GetProductByID(c *fiber.Ctx) error {
+func (h *StockMovementHandler) GetMovementByID(c *fiber.Ctx) error {
 	idParam := c.Params("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
@@ -57,7 +53,7 @@ func (h *ProductHandler) GetProductByID(c *fiber.Ctx) error {
 		})
 	}
 
-	resp, err := h.service.GetByID(c.Context(), id)
+	res, err := h.service.GetByMovementID(c.Context(), id)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(dto.ErrorResponse{
 			Error:   "not_found",
@@ -66,13 +62,13 @@ func (h *ProductHandler) GetProductByID(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(dto.SuccessResponse{
-		Data:   resp,
+		Data:   res,
 		Status: fiber.StatusOK,
 	})
 }
 
-func (h *ProductHandler) GetAllProducts(c *fiber.Ctx) error {
-	resp, err := h.service.GetAll(c.Context())
+func (h *StockMovementHandler) GetAllMovement(c *fiber.Ctx) error {
+	res, err := h.service.GetAllMovement(c.Context())
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(dto.ErrorResponse{
 			Error:   "not_found",
@@ -81,7 +77,7 @@ func (h *ProductHandler) GetAllProducts(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(dto.SuccessResponse{
-		Data:   resp,
+		Data:   res,
 		Status: fiber.StatusOK,
 	})
 }

@@ -24,17 +24,23 @@ func main() {
 
 	jwtManager := auth.NewJWTManager(cfg.JWTSecret, cfg.JWTExpireHour)
 
+	txManager := repository.NewTxManager(db)
+
 	userRepository := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository, jwtManager)
 	userHandler := handler.NewUserHandler(userService, cfg)
 
-	stockReposity := repository.NewStockRepository(db)
-	stockService := service.NewStockService(stockReposity)
+	stockRepository := repository.NewStockRepository(db)
+	stockService := service.NewStockService(stockRepository)
 	stockHandler := handler.NewStockHandler(stockService, cfg)
 
-	productRepository := repository.NewProductReposity(db)
-	productService := service.NewProductService(productRepository)
-	productHandler := handler.NewProeductHandler(productService, cfg)
+	productRepository := repository.NewProductRepository(db)
+	productService := service.NewProductService(productRepository, txManager, stockRepository)
+	productHandler := handler.NewProductHandler(productService, cfg)
+
+	stockMovementRepository := repository.NewStockMovementRepository(db)
+	stockMovementService := service.NewStockMovementService(stockMovementRepository, txManager, stockRepository)
+	stockMovementHandler := handler.NewStockMovementHandler(stockMovementService, cfg)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -59,6 +65,11 @@ func main() {
 	stock := protected.Group("/stock")
 	stock.Get("", stockHandler.GetAllProductStocks)
 	stock.Get("/:id", stockHandler.GetProductStock)
+
+	stockMovement := protected.Group("/stock-movement")
+	stockMovement.Post("", stockMovementHandler.Create)
+	stockMovement.Get("", stockMovementHandler.GetAllMovement)
+	stockMovement.Get("/:id", stockMovementHandler.GetMovementByID)
 
 	addr := fmt.Sprintf(":%s", cfg.AppPort)
 	log.Printf("Server running on %s", addr)

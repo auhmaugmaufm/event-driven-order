@@ -26,3 +26,15 @@ func (t *txRepository) ExecTx(ctx context.Context, fn func(
 		)
 	})
 }
+
+func (t *txRepository) ExecStockMovementTx(ctx context.Context, fn func(
+	stockMovementRepo domain.StockMovementRepository,
+	stockRepo domain.StockRepository,
+) error) error {
+	return t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return fn(
+			&stockMovementReposity{db: tx},
+			&stockRepository{db: tx},
+		)
+	})
+}
