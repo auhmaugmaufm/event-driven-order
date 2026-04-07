@@ -43,7 +43,7 @@ func main() {
 	stockMovementHandler := handler.NewStockMovementHandler(stockMovementService, cfg)
 
 	orderRepository := repository.NewOrderRepository(db)
-	orderService := service.NewOrderService(orderRepository)
+	orderService := service.NewOrderService(orderRepository, productRepository)
 	orderHandler := handler.NewOrderHandler(orderService, cfg)
 
 	app := fiber.New(fiber.Config{
