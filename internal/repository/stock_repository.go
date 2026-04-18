@@ -34,6 +34,21 @@ func (r *stockRepository) DecreaseStockWithTx(ctx context.Context, productId uui
 		Update("quantity", gorm.Expr("quantity - ?", quantity)).Error
 }
 
+func (r *stockRepository) DecreaseStockBulkWithTx(ctx context.Context, stockAdjustments []domain.StockAdjustment) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for _, adj := range stockAdjustments {
+			result := tx.Model(&domain.Stock{}).
+				Where("product_id = ? AND quantity >= ?", adj.ProductID, adj.Quantity).
+				Update("quantity", gorm.Expr("quantity - ?", adj.Quantity))
+
+			if result.Error != nil {
+				return result.Error
+			}
+		}
+		return nil
+	})
+}
+
 func (r *stockRepository) GetProductStock(ctx context.Context, productId uuid.UUID) (*domain.Stock, error) {
 	var stock domain.Stock
 	err := r.db.WithContext(ctx).Preload("Product").Where("product_id = ?", productId).First(&stock).Error

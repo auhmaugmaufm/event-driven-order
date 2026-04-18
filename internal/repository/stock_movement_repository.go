@@ -24,6 +24,10 @@ func (s *stockMovementReposity) Create(ctx context.Context, stockMovement *domai
 	return s.db.WithContext(ctx).Create(stockMovement).Error
 }
 
+func (s *stockMovementReposity) CreateBulk(ctx context.Context, stockMovements []domain.StockMovement) error {
+	return s.db.WithContext(ctx).CreateInBatches(stockMovements, 100).Error
+}
+
 func (s *stockMovementReposity) FindByMovementType(ctx context.Context, movementType string, pagination *domain.Pagination) ([]domain.StockMovement, int64, error) {
 	page := pagination.Page
 	limit := pagination.Limit

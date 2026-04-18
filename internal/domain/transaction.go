@@ -13,4 +13,13 @@ type TxRepository interface {
 		stockMovement StockMovementRepository,
 		stockRepo StockRepository,
 	) error) error
+	// ExecStockMovementBulkTx(ctx context.Context, fn func(
+	// 	stockMovement StockMovementRepository,
+	// 	stockRepo StockRepository,
+	// ) error) error
+	ExecOrderTx(ctx context.Context, fn func(
+		orderRepo OrderRepository,
+		stockMovement StockMovementRepository,
+		stockRepo StockRepository,
+	) error) error
 }

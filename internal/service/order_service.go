@@ -12,10 +12,12 @@ import (
 type OrderService struct {
 	repo        domain.OrderRepository
 	productRepo domain.ProductRepository
+	txm         domain.TxRepository
+	stockRepo   domain.StockRepository
 }
 
-func NewOrderService(repo domain.OrderRepository, productRepo domain.ProductRepository) *OrderService {
-	return &OrderService{repo: repo, productRepo: productRepo}
+func NewOrderService(repo domain.OrderRepository, productRepo domain.ProductRepository, txm domain.TxRepository, stockRepo domain.StockRepository) *OrderService {
+	return &OrderService{repo: repo, productRepo: productRepo, txm: txm, stockRepo: stockRepo}
 }
 
 func (s *OrderService) Create(ctx context.Context, req *dto.OrderRequest) error {
@@ -50,17 +52,50 @@ func (s *OrderService) Create(ctx context.Context, req *dto.OrderRequest) error 
 		}
 	}
 
-	order := &domain.Order{
-		UserID:      req.UserID,
-		TotalAmount: totalAmount,
-		Items:       items,
-	}
+	return s.txm.ExecOrderTx(ctx, func(
+		orderRepo domain.OrderRepository,
+		stockMovementRepo domain.StockMovementRepository,
+		stockRepo domain.StockRepository) error {
+		order := &domain.Order{
+			UserID:      req.UserID,
+			TotalAmount: totalAmount,
+			Items:       items,
+		}
+		if err := orderRepo.Create(ctx, order); err != nil {
+			return err
+		}
 
-	if err := s.repo.Create(ctx, order); err != nil {
-		return err
-	}
+		stockAdjustments := make([]domain.StockAdjustment, len(order.Items))
+		stockMovements := make([]domain.StockMovement, len(order.Items))
 
-	return nil
+		for i, item := range order.Items {
+			stock, err := stockRepo.GetProductStock(ctx, item.ProductID)
+			if err != nil {
+				return err
+			}
+
+			stockAdjustments[i] = domain.StockAdjustment{
+				ProductID: item.ProductID,
+				Quantity:  item.Quantity,
+			}
+
+			stockMovements[i] = domain.StockMovement{
+				StockID:      stock.ID,
+				MovementType: "OUT",
+				Quantity:     item.Quantity,
+			}
+		}
+
+		if err := stockRepo.DecreaseStockBulkWithTx(ctx, stockAdjustments); err != nil {
+			return err
+		}
+
+		if err := stockMovementRepo.CreateBulk(ctx, stockMovements); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (s *OrderService) GetByID(ctx context.Context, id uuid.UUID) (*domain.Order, error) {
