@@ -33,7 +33,7 @@ func main() {
 	userService := service.NewUserService(userRepository, jwtManager)
 	userHandler := handler.NewUserHandler(userService, cfg)
 
-	stockRepository := repository.NewStockRepository(db)
+	stockRepository := repository.NewStockRepository(db, rdb)
 	stockService := service.NewStockService(stockRepository)
 	stockHandler := handler.NewStockHandler(stockService, cfg)
 
@@ -41,11 +41,11 @@ func main() {
 	productService := service.NewProductService(productRepository, txManager, stockRepository)
 	productHandler := handler.NewProductHandler(productService, cfg)
 
-	stockMovementRepository := repository.NewStockMovementRepository(db)
+	stockMovementRepository := repository.NewStockMovementRepository(db, rdb)
 	stockMovementService := service.NewStockMovementService(stockMovementRepository, txManager, stockRepository)
 	stockMovementHandler := handler.NewStockMovementHandler(stockMovementService, cfg)
 
-	orderRepository := repository.NewOrderRepository(db)
+	orderRepository := repository.NewOrderRepository(db, rdb)
 	orderService := service.NewOrderService(orderRepository, productRepository, txManager, stockRepository)
 	orderHandler := handler.NewOrderHandler(orderService, cfg)
 
