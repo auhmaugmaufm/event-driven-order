@@ -19,6 +19,9 @@ type Config struct {
 	DBName    string
 	DBSSLMode string
 
+	RDBHost string
+	RDBPort string
+
 	JWTSecret     string
 	JWTExpireHour int
 }
@@ -35,17 +38,20 @@ func Load() {
 
 	expireHour, _ := strconv.Atoi(getEnv("JWT_EXPIRE_HOUR", "24"))
 	cfg = &Config{
-		AppEnv:  getEnv("DB_HOST", "localhost"),
-		AppPort: getEnv("APP_PORT", "localhost"),
+		AppEnv:  os.Getenv("APP_ENV"),
+		AppPort: os.Getenv("APP_PORT"),
 
-		DBHost:    getEnv("DB_HOST", "localhost"),
-		DBPort:    getEnv("DB_PORT", "5432"),
-		DBUser:    getEnv("DB_USER", "user"),
-		DBPass:    getEnv("DB_PASS", "password"),
-		DBName:    getEnv("DB_NAME", "edo_new"),
-		DBSSLMode: getEnv("DB_SSLMODE", "disable"),
+		DBHost:    os.Getenv("DB_HOST"),
+		DBPort:    os.Getenv("DB_PORT"),
+		DBUser:    os.Getenv("DB_USER"),
+		DBPass:    os.Getenv("DB_PASS"),
+		DBName:    os.Getenv("DB_NAME"),
+		DBSSLMode: os.Getenv("DB_SSLMODE"),
 
-		JWTSecret:     getEnv("JWT_SECRET", "secretmakmak"),
+		RDBHost: os.Getenv("RDB_HOST"),
+		RDBPort: os.Getenv("RDB_PORT"),
+
+		JWTSecret:     os.Getenv("JWT_SECRET"),
 		JWTExpireHour: expireHour,
 	}
 }

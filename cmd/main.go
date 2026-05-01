@@ -22,6 +22,9 @@ func main() {
 	database.RunMigrations(cfg)
 	db := database.NewPostgresDB(cfg)
 
+	rdb := database.NewRedisCache(cfg)
+	defer rdb.Close()
+
 	jwtManager := auth.NewJWTManager(cfg.JWTSecret, cfg.JWTExpireHour)
 
 	txManager := repository.NewTxManager(db)
@@ -34,7 +37,7 @@ func main() {
 	stockService := service.NewStockService(stockRepository)
 	stockHandler := handler.NewStockHandler(stockService, cfg)
 
-	productRepository := repository.NewProductRepository(db)
+	productRepository := repository.NewProductRepository(db, rdb)
 	productService := service.NewProductService(productRepository, txManager, stockRepository)
 	productHandler := handler.NewProductHandler(productService, cfg)
 
